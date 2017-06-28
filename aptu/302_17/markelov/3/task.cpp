@@ -58,6 +58,7 @@ user_params parse_opts(int argc, char** argv) {
            break;
        case 'f':
            param.br_journal = string(optarg);
+           param.journal_set = true;
            break;
        default:
            cerr << "Unknown option";
@@ -112,8 +113,9 @@ public:
         vector<pixel> ret;
         for(unsigned i = 0; i< image->N; i++)
            for(unsigned j = 0; j < image->M; j++) {
-               if (image->matrix[i][j] == level)
+               if (image->matrix[i][j] == level) {
                    ret.push_back(pixel(i, j));
+               }
            }
         return ret;
     }
@@ -124,14 +126,15 @@ private:
 
 
 class highlight_proc {
-    size_t rect;
+    ssize_t rect;
     void hightlight_rect(image * r, brigtness_proc::pixel pixel, image * old_image) {
         for(int x = -rect; x <= rect; x++)
             for(int y = -rect ; y <= rect; y++) {
                 int i = x + pixel.x;
                 int j = y + pixel.y;
-                if (image::bounds(i, j))
+                if (image::bounds(i, j)) {
                     r->matrix[i][j] = old_image->at(x, y);
+                }
             }
     }
     void proc_for(image * ret, vector<brigtness_proc::pixel> &s, image * old_image) {
@@ -254,7 +257,6 @@ void build_graph(user_params & params) {
     make_edge(pr, input_port<1>(fin));
 
 
-//    make_edge(lim, huyna);
     g.wait_for_all();
     if (params.journal_set)
         delete log;
